@@ -8,9 +8,9 @@ function App() {
     <>
       <Header />
       <Main />
-      <Footer />
       <Button nombre="BOTON 1"/>
       <Button nombre="BOTON 2"/>
+      <Footer />
     </>
   )
 }
