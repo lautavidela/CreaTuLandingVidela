@@ -1,35 +1,57 @@
-import { useState, useEffect } from 'react'
-import { getProductById } from '../asyncMock'
-import { useParams } from 'react-router-dom'
-import ItemDetail from './ItemDetail'
+import { useState, useEffect } from "react"
+import ItemDetail from './ItemDetail';
+import { useParams } from "react-router-dom"
+
+// 1. IMPORTACIONES DE FIREBASE (Notar que son distintas a las del List)
+import { getDoc, doc } from "firebase/firestore"
+import { db } from "../firebaseConfig"
 
 const ItemDetailContainer = () => {
     const [product, setProduct] = useState(null)
     const [loading, setLoading] = useState(true)
-    
+
     const { itemId } = useParams()
 
     useEffect(() => {
         setLoading(true)
-        
-        getProductById(itemId)
-            .then(response => {
-                setProduct(response)
+
+        // 2. CREAMOS LA REFERENCIA AL DOCUMENTO ÚNICO
+        // doc(baseDeDatos, "nombreColeccion", "ID del producto")
+        const docRef = doc(db, "products", itemId)
+
+        // 3. PEDIMOS EL DOCUMENTO
+        getDoc(docRef)
+            .then((response) => {
+                // Validación: ¿Existe el producto con ese ID?
+                if (response.exists()) {
+                    const data = response.data()
+                    const productAdapted = { id: response.id, ...data }
+                    setProduct(productAdapted)
+                } else {
+                    console.error("El producto no existe")
+                    setProduct(null)
+                }
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error(error)
             })
             .finally(() => {
                 setLoading(false)
             })
+
     }, [itemId])
 
+    if (loading) {
+        return <h1>Cargando detalle...</h1>
+    }
+
+    if (!product) {
+        return <h1>El producto no existe</h1>
+    }
+
     return (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-            {loading ? 
-                <h3>Cargando producto...</h3> : 
-                <ItemDetail {...product} />
-            }
+        <div>
+            <ItemDetail {...product} />
         </div>
     )
 }
