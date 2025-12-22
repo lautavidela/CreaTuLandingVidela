@@ -3,9 +3,8 @@ import { CartContext } from "../context/CartContext";
 import { Link } from "react-router-dom";
 
 const Cart = () => {
-    const { cart, clearCart, removeItem } = useContext(CartContext);
+    const { cart, clearCart, removeItem, total } = useContext(CartContext);
 
-    const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     if (cart.length === 0) {
         return (
@@ -19,14 +18,17 @@ const Cart = () => {
     return (
         <div className="container">
             <h1 className="page-title">Tu Carrito</h1>
-            
 
             <div>
                 {cart.map(p => (
                     <div key={p.id} className="CartItem">
                         <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
-
-                           {p.img && <img src={p.img} alt={p.name} style={{width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px'}}/>}
+                           {p.img ? (
+                                <img src={p.img} alt={p.name} style={{width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px'}}/>
+                           ) : (
+                                <span style={{width: '80px', height: '80px', background: '#ccc'}}>Sin img</span>
+                           )}
+                           
                            <div>
                                 <h3>{p.name}</h3>
                                 <p>Cantidad: {p.quantity}</p>

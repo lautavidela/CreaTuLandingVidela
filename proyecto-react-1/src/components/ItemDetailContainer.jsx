@@ -1,58 +1,58 @@
-import { useState, useEffect } from "react"
-import ItemDetail from './ItemDetail';
-import { useParams } from "react-router-dom"
-
-
-import { getDoc, doc } from "firebase/firestore"
-import { db } from "../firebaseConfig"
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import ItemDetail from '../components/ItemDetail';
 
 const ItemDetailContainer = () => {
-    const [product, setProduct] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const { itemId } = useParams()
+    const { itemId } = useParams();
 
     useEffect(() => {
-        setLoading(true)
+        setLoading(true);
 
-
-        const docRef = doc(db, "products", itemId)
-
+        const docRef = doc(db, 'productos', itemId);
 
         getDoc(docRef)
-            .then((response) => {
+            .then(response => {
+                const data = response.data();
 
-                if (response.exists()) {
-                    const data = response.data()
-                    const productAdapted = { id: response.id, ...data }
-                    setProduct(productAdapted)
-                } else {
-                    console.error("El producto no existe")
-                    setProduct(null)
-                }
+                const productAdapted = {
+                    id: response.id,
+                    name: data.nombre,
+                    img: data.imagen,
+                    price: data.precio,
+                    category: data.categoria,
+                    description: data.descripcion,
+                    stock: data.stock
+                };
+
+                setProduct(productAdapted);
             })
-            .catch((error) => {
-                console.error(error)
+            .catch(error => {
+                console.log(error);
             })
             .finally(() => {
-                setLoading(false)
-            })
+                setLoading(false);
+            });
 
-    }, [itemId])
+    }, [itemId]);
 
     if (loading) {
-        return <h1>Cargando detalle...</h1>
+        return <h3>Cargando detalle...</h3>;
     }
 
     if (!product) {
-        return <h1>El producto no existe</h1>
+        return <h3>El producto no existe</h3>;
     }
 
     return (
         <div>
             <ItemDetail {...product} />
         </div>
-    )
-}
+    );
+};
 
-export default ItemDetailContainer
+export default ItemDetailContainer;

@@ -5,18 +5,38 @@ const Header = () => {
   return (
     <header>
       <Link to="/">
-        <h1>Mi Tienda</h1>
+        <h1>Tienda de Ropa</h1>
       </Link>
 
       <nav>
-
-        <NavLink to="/category/ropa" className={({isActive}) => isActive ? 'ActiveOption' : 'Option'}>Ropa</NavLink>
-        <NavLink to="/category/electronica" className={({isActive}) => isActive ? 'ActiveOption' : 'Option'}>Electronica</NavLink>
-        <NavLink to="/category/calzado" className={({isActive}) => isActive ? 'ActiveOption' : 'Option'}>Calzado</NavLink>
+        <NavLink 
+            to="/category/superior" 
+            className={({isActive}) => isActive ? 'ActiveOption' : 'Option'}
+        >
+            Prenda Superior
+        </NavLink>
+        
+        <NavLink 
+            to="/category/inferior" 
+            className={({isActive}) => isActive ? 'ActiveOption' : 'Option'}
+        >
+            Prenda Inferior
+        </NavLink>
+        
+        <NavLink 
+            to="/category/accesorios" 
+            className={({isActive}) => isActive ? 'ActiveOption' : 'Option'}
+        >
+            Accesorios
+        </NavLink>
       </nav>
       
-
-      <Link to="/cart" style={{color: 'white', fontWeight: 'bold'}}>🛒 Carrito</Link>
+      <Link to="/cart" style={{color: 'white', fontWeight: 'bold'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+            <span>Carrito</span>
+            <CartWidget />
+        </div>
+      </Link>
     </header>
   );
 };

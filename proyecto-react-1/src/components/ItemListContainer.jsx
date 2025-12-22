@@ -14,17 +14,26 @@ const ItemListContainer = ({ greeting }) => {
     useEffect(() => {
         setLoading(true)
 
-        const collectionRef = collection(db, 'products')
+        const collectionRef = collection(db, 'productos')
 
         const q = categoryId 
-            ? query(collectionRef, where('category', '==', categoryId))
+            ? query(collectionRef, where('categoria', '==', categoryId))
             : collectionRef
 
         getDocs(q)
             .then(response => {
                 const productsAdapted = response.docs.map(doc => {
                     const data = doc.data()
-                    return { id: doc.id, ...data }
+                    
+                    return { 
+                        id: doc.id, 
+                        name: data.nombre,
+                        img: data.imagen,
+                        price: data.precio,
+                        category: data.categoria,
+                        description: data.descripcion,
+                        stock: data.stock
+                    }
                 })
                 setProducts(productsAdapted)
             })
@@ -44,7 +53,10 @@ const ItemListContainer = ({ greeting }) => {
     return (
         <div>
             <h1>{greeting}</h1>
-            <ItemList products={products} />
+            {products.length > 0 
+                ? <ItemList products={products} />
+                : <p>No se encontraron productos.</p>
+            }
         </div>
     )
 }
