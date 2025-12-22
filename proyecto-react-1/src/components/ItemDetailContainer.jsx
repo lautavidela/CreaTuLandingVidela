@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import ItemDetail from './ItemDetail';
 import { useParams } from "react-router-dom"
 
-// 1. IMPORTACIONES DE FIREBASE (Notar que son distintas a las del List)
+
 import { getDoc, doc } from "firebase/firestore"
 import { db } from "../firebaseConfig"
 
@@ -15,14 +15,13 @@ const ItemDetailContainer = () => {
     useEffect(() => {
         setLoading(true)
 
-        // 2. CREAMOS LA REFERENCIA AL DOCUMENTO ÚNICO
-        // doc(baseDeDatos, "nombreColeccion", "ID del producto")
+
         const docRef = doc(db, "products", itemId)
 
-        // 3. PEDIMOS EL DOCUMENTO
+
         getDoc(docRef)
             .then((response) => {
-                // Validación: ¿Existe el producto con ese ID?
+
                 if (response.exists()) {
                     const data = response.data()
                     const productAdapted = { id: response.id, ...data }

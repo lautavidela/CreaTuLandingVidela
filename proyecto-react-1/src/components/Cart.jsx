@@ -5,46 +5,51 @@ import { Link } from "react-router-dom";
 const Cart = () => {
     const { cart, clearCart, removeItem } = useContext(CartContext);
 
-    // Calculamos el total a pagar (esto también podría ir en el Context, pero aquí sirve)
     const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-    // Caso 1: El carrito está vacío
     if (cart.length === 0) {
         return (
-            <div style={{textAlign: 'center', padding: '50px'}}>
+            <div className="container" style={{textAlign: 'center', padding: '100px'}}>
                 <h1>No hay productos en el carrito</h1>
-                <Link to='/' style={{fontSize: '20px'}}>Volver al inicio</Link>
+                <Link to='/' className="Button">Volver al inicio</Link>
             </div>
         )
     }
 
-    // Caso 2: Hay productos
     return (
-        <div style={{padding: '20px'}}>
-            <h1>Tu Carrito</h1>
+        <div className="container">
+            <h1 className="page-title">Tu Carrito</h1>
             
-            {/* Listado de productos */}
-            {cart.map(p => (
-                <div key={p.id} style={{borderBottom: '1px solid #ccc', padding: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <div>
-                        <h3>{p.name}</h3>
-                        <p>Precio unit: ${p.price}</p>
-                        <p>Cantidad: {p.quantity}</p>
-                    </div>
-                    <div>
-                        <p style={{fontWeight: 'bold'}}>Subtotal: ${p.price * p.quantity}</p>
-                        <button onClick={() => removeItem(p.id)} style={{backgroundColor: 'red', color: 'white'}}>
-                            Eliminar
-                        </button>
-                    </div>
-                </div>
-            ))}
 
-            <h2 style={{textAlign: 'right'}}>Total a pagar: ${total}</h2>
+            <div>
+                {cart.map(p => (
+                    <div key={p.id} className="CartItem">
+                        <div style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
 
-            <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px'}}>
-                <button onClick={() => clearCart()} style={{padding: '10px'}}>Vaciar Carrito</button>
-                <Link to='/checkout' style={{backgroundColor: 'green', color: 'white', padding: '10px', textDecoration: 'none'}}>Generar Orden</Link>
+                           {p.img && <img src={p.img} alt={p.name} style={{width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px'}}/>}
+                           <div>
+                                <h3>{p.name}</h3>
+                                <p>Cantidad: {p.quantity}</p>
+                           </div>
+                        </div>
+                        
+                        <div style={{textAlign: 'right'}}>
+                            <p style={{fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '10px'}}>${p.price * p.quantity}</p>
+                            <button onClick={() => removeItem(p.id)} className="Button Danger">
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '30px', gap: '20px'}}>
+                <h2 style={{fontSize: '1.5rem'}}>Total: ${total}</h2>
+            </div>
+
+            <div style={{display: 'flex', justifyContent: 'flex-end', gap: '15px', marginTop: '20px'}}>
+                <button onClick={() => clearCart()} className="Button Secondary">Vaciar Carrito</button>
+                <Link to='/checkout' className="Button">Terminar Compra</Link>
             </div>
         </div>
     )

@@ -1,7 +1,7 @@
 import { useState, useContext } from "react"
 import { CartContext } from "../context/CartContext"
 import { db } from "../firebaseConfig"
-import { collection, addDoc, Timestamp } from "firebase/firestore"
+import { collection, addDoc, Timestamp, writeBatch, query, where, getDocs, documentId } from "firebase/firestore"
 
 const Checkout = () => {
     const [loading, setLoading] = useState(false)
@@ -9,14 +9,12 @@ const Checkout = () => {
 
     const { cart, clearCart } = useContext(CartContext)
 
-    // Estado para los datos del comprador
     const [userData, setUserData] = useState({
         name: '',
         phone: '',
         email: ''
     })
 
-    // Función para manejar el cambio en los inputs
     const handleInputChange = (e) => {
         setUserData({
             ...userData,
@@ -24,13 +22,11 @@ const Checkout = () => {
         })
     }
 
-    // Función para crear la orden
     const createOrder = async (e) => {
         e.preventDefault()
         setLoading(true)
 
         try {
-            // 1. Armamos el objeto de la orden
             const objOrder = {
                 buyer: userData,
                 items: cart,
@@ -38,15 +34,37 @@ const Checkout = () => {
                 date: Timestamp.fromDate(new Date())
             }
 
-            // 2. Creamos la referencia a la colección "orders" (se crea sola si no existe)
-            const orderRef = collection(db, 'orders')
+            const batch = writeBatch(db)
+            const productsRef = collection(db, 'products')
+            const ids = cart.map(prod => prod.id)
+            const productsAddedFromFirestore = await getDocs(query(productsRef, where(documentId(), 'in', ids)))
+            const { docs } = productsAddedFromFirestore
 
-            // 3. Guardamos en Firebase
-            const orderAdded = await addDoc(orderRef, objOrder)
+            let outOfStock = []
 
-            // 4. Guardamos el ID que nos dio Firebase y limpiamos el carrito
-            setOrderId(orderAdded.id)
-            clearCart()
+            docs.forEach(doc => {
+                const dataDoc = doc.data()
+                const stockDb = dataDoc.stock
+
+                const productAddedToCart = cart.find(prod => prod.id === doc.id)
+                const prodQuantity = productAddedToCart?.quantity
+
+                if(stockDb >= prodQuantity) {
+                    batch.update(doc.ref, { stock: stockDb - prodQuantity })
+                } else {
+                    outOfStock.push({ id: doc.id, ...dataDoc })
+                }
+            })
+
+            if(outOfStock.length === 0) {
+                await batch.commit()
+                const orderRef = collection(db, 'orders')
+                const orderAdded = await addDoc(orderRef, objOrder)
+                setOrderId(orderAdded.id)
+                clearCart()
+            } else {
+                console.error("Hay productos que no tienen stock disponible")
+            }
 
         } catch (error) {
             console.error(error)
@@ -56,31 +74,39 @@ const Checkout = () => {
     }
 
     if (loading) {
-        return <h1>Se está generando su orden...</h1>
+        return <h1 className="page-title">Se está generando su orden...</h1>
     }
 
     if (orderId) {
-        return <h1>El id de su orden es: {orderId}</h1>
+        return (
+            <div className="container" style={{textAlign: 'center', padding: '50px'}}>
+                <h1 className="page-title">¡Gracias por su compra!</h1>
+                <p style={{fontSize: '1.2rem', marginBottom: '20px'}}>El id de su orden es: <b>{orderId}</b></p>
+
+            </div>
+        )
     }
 
     return (
-        <div style={{padding: '20px'}}>
-            <h1>Checkout</h1>
-            <form onSubmit={createOrder} style={{display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '400px'}}>
-                <label>
+        <div className="container">
+            <h1 className="page-title">Finalizar Compra</h1>
+            
+
+            <form onSubmit={createOrder} className="FormContainer">
+                <label style={{display: 'block', marginBottom: '15px'}}>
                     Nombre:
-                    <input type="text" name="name" value={userData.name} onChange={handleInputChange} required style={{width: '100%'}}/>
+                    <input type="text" name="name" value={userData.name} onChange={handleInputChange} required placeholder="Juan Perez"/>
                 </label>
-                <label>
+                <label style={{display: 'block', marginBottom: '15px'}}>
                     Teléfono:
-                    <input type="text" name="phone" value={userData.phone} onChange={handleInputChange} required style={{width: '100%'}}/>
+                    <input type="text" name="phone" value={userData.phone} onChange={handleInputChange} required placeholder="11 1234 5678"/>
                 </label>
-                <label>
+                <label style={{display: 'block', marginBottom: '20px'}}>
                     Email:
-                    <input type="email" name="email" value={userData.email} onChange={handleInputChange} required style={{width: '100%'}}/>
+                    <input type="email" name="email" value={userData.email} onChange={handleInputChange} required placeholder="juan@email.com"/>
                 </label>
 
-                <button type="submit" style={{padding: '10px', backgroundColor: 'blue', color: 'white'}}>Generar Orden</button>
+                <button type="submit" className="Button" style={{width: '100%'}}>Generar Orden</button>
             </form>
         </div>
     )
