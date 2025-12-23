@@ -8,7 +8,6 @@ export const CartContext = createContext({
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
 
-    console.log(cart);
 
     const total = cart.reduce((acc, prod) => acc + (prod.price * prod.quantity), 0);
 
